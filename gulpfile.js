@@ -1,11 +1,12 @@
-// yarn add gulp gulp-sass gulp-postcss autoprefixer cssnano gulp-minify gulp-sourcemaps gulp-html-tag-include browser-sync
+// yarn add gulp gulp-sass gulp-postcss autoprefixer cssnano gulp-uglify gulp-concat gulp-sourcemaps gulp-html-tag-include browser-sync
 
 const gulp = require("gulp"),
     sass = require("gulp-sass"),
     postcss = require("gulp-postcss"),
     autoprefixer = require("autoprefixer"),
     cssnano = require("cssnano"),
-    minify = require('gulp-minify'),
+    uglify = require("gulp-uglify"),
+    concat = require("gulp-concat"),
     sourcemaps = require("gulp-sourcemaps"),
     fileinclude = require("gulp-html-tag-include"),
     browserSync = require("browser-sync").create();
@@ -35,8 +36,6 @@ const paths = {
         // Compiled files will end up in whichever folder it's found in (partials are not compiled)
         dest: "./dist/img"
     },
-
-
 
 
     // Easily add additional paths
@@ -71,16 +70,23 @@ function html() {
 
 }
 
+function script() {
+    return gulp
+        .src([
+            './src/js/lib/**',
+            '!ui-script.js'
+        ])
+        .pipe(sourcemaps.init())
+        .pipe(uglify())
+        .pipe(concat('script.js'))
+        .pipe(sourcemaps.write())
+        .pipe(gulp.dest('./dist/js'))
+}
+
 function js() {
     return gulp
-        .src(paths.js.src)
-        .pipe(minify({
-            ext:{
-                src:'ui-script.js', // The suffix string of the filenames that output source files ends with.
-                min:'.js'
-            },
-            exclude: ['js/lib'], // Will not minify files in the dirs.
-        }))
+        .src('./src/js/ui-script.js')
+        .pipe(script())
         .pipe(gulp.dest(paths.js.dest))
         .pipe(browserSync.stream());
 }
